@@ -78,8 +78,7 @@ function parseData(obj) {
       // Go through all the columns, and save all the ones that are
       // the dates (i.e. aren't names) and we haven't seen before
       for (let column of Object.keys(entry)) {
-         if (!ignoredCols.includes(column) &&
-             !dates.includes(column)) {
+         if (!ignoredCols.includes(column) && !dates.includes(column)) {
            dates.push(column);
          }
       }

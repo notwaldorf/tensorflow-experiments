@@ -52,5 +52,5 @@ correctly along the lines of "No module named tensorflow". I don't know how to h
 Then:
 
 ```
-python3 run.py
+npm run python
 ```
