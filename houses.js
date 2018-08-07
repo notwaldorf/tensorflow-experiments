@@ -6,58 +6,66 @@ let Model = {};
 let LEARNING_RATE = 0.001;
 let EPOCHS = 100;
 let MAX_LOSS = 0.00000001;
-let tf = window.tf; // please the glitch linter
+let UNITS = 60;
 
-fetch('https://cdn.glitch.com/3d57b094-f181-4c7f-b669-a5f958d7bdd8%2Fhouses.json?1533080873504')
+fetch('./data.json')
 .then(function(response) {
   return response.json();
 })
-.then(function(obj) {
-  console.log('got data');
-  Data = parseData(obj);
-  console.log('parsed data');
-  initModel();
-  console.log('initialized model');
-  replot();
-});
+.then(dataReceived);
 
+async function dataReceived(obj) {
+  let start = Date.now();
+  Data = parseData(obj);
+  console.log(`Parsing data: ${Date.now() - start} ms`);
+
+  start = Date.now();
+  initModel();
+  console.log(`Initializing model: ${Date.now() - start} ms`);
+  replot();
+
+  start = Date.now();
+  const prediction = await getNormalizedPrediction(Data.trainingData[0]);
+  console.log(`First inference: ${Date.now() - start} ms`);
+  replot(prediction);
+}
 function parseData(obj) {
   // The data is:
   // - 11 entries
   // - columns: RegionName/State/SizeRank/1996-04/1996-05...
-  
+
   // Names of cities
   let cities = [];
   let dates = [];
   let prices = [];
-  
+
   // min/max price
   let minPrice = 100000;
   let maxPrice = -1;
   const ignoredCols = ['RegionName', 'State', 'SizeRank'];
-  
+
   for (let entry of obj) {
     // Save this just in case we need it.
     cities.push(entry['RegionName']);
-    
+
     // Add it to the select dropdown.
     const opt = document.createElement('option');
     opt.textContent = entry['RegionName'];
     select.add(opt);
     const theseCols = Object.keys(entry);
-    
+
     // If this entry doesn't have any new columns, move on.
     if (ignoredCols.length + dates.length !== theseCols.length) {
       // Go through all the columns, and save all the ones that are
       // the dates (i.e. aren't names) and we haven't seen before
       for (let column of Object.keys(entry)) {
-         if (!ignoredCols.includes(column) && 
+         if (!ignoredCols.includes(column) &&
              !dates.includes(column)) {
            dates.push(column);
          }
       }
     }
-    
+
     // Save the prices for this city. We're assuming not all cities have all the dates.
     const values = [];
     for (let date of dates) {
@@ -76,10 +84,10 @@ function parseData(obj) {
 function initModel() {
   // Normalize the data.
   Data.trainingData = getTrainingData(Data);
-  
+
   Model = tf.sequential();
   Model.add(tf.layers.lstm({
-      units: 10,
+      units: UNITS,
       inputShape: [Data.trainingData[0].length, 1],
       //returnSequences: true
   }));
@@ -96,6 +104,8 @@ function initModel() {
 }
 
 async function train() {
+  let start = Date.now();
+
   for(let e = 0; e < EPOCHS; e++) {
     var totalLoss = 0;
     for(let i = 0; i < Data.trainingData.length; i++) {
@@ -105,16 +115,20 @@ async function train() {
     }
     var avgLoss = totalLoss/Data.trainingData.length;
     console.log(`[${e}/${EPOCHS}] Average Loss: ${avgLoss};`);
-    
+
     if(MAX_LOSS >= avgLoss)
       break;
-    
+
     // Use tf.nextFrame to not block the browser.
     await tf.nextFrame();
-    //await replot();
   }
-  console.log('Training complete');
-  replot();
+
+  console.log(`Training: ${Date.now() - start} ms`);
+
+  start = Date.now();
+  const prediction = await getNormalizedPrediction(Data.trainingData[0]);
+  console.log(`Inference: ${Date.now() - start} ms`);
+  replot(prediction);
 }
 
 async function getNormalizedPrediction(trainingData) {
@@ -126,11 +140,8 @@ async function getNormalizedPrediction(trainingData) {
 /*
 Plotting stuff
 */
-async function replot() {
-  console.log('replot');
+async function replot(prediction) {
   const index = select.selectedIndex;
-  const prediction = await getNormalizedPrediction(Data.trainingData[index]);
-  console.log('got prediction');
   plot(Data.dates, Data.prices[index], prediction);
 }
 
@@ -140,20 +151,22 @@ function plot(xs, ys, prediction) {
     x: xs,
     y: ys,
     mode: 'lines',
-    marker: { size: 12, color:'#29B6F6' }
+    marker: { size: 12, color:'#29B6F6' },
+    name: 'Training Data'
   };
-  
+
   const trace2 = {
     x: [xs[xs.length - 1]],
     y: [prediction],
     mode: 'markers',
-    marker: { size: 12, color:'#EE018A' }
+    marker: { size: 12, color:'#EE018A' },
+    name: 'Prediction'
   };
   const layout = {
-    
+
   };
   Plotly.newPlot('graph', [trace1, trace2], layout, {displayModeBar: false});
-}  
+}
 
 /*
 General utils
@@ -163,7 +176,7 @@ function getTrainingData(data) {
   for(let i = 0; i < data.cities.length; i++) {
     let ys = data.prices[i];
     let normalized = [];
-    
+
     for(let j = 0; j < ys.length - 1; j++) {
       normalized.push(normalize(ys[j], data.minPrice, data.maxPrice));
     }
