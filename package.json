@@ -4,7 +4,8 @@
   "description": "Figuring out speed differences between tf js and python",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "local": "hs"
   },
   "repository": {
     "type": "git",
@@ -20,7 +21,7 @@
     "@tensorflow/tfjs": "0.12.4",
     "@tensorflow/tfjs-node": "^0.1.11"
   },
-  "scripts": {
-    "start": "node index.js"
+  "devDependencies": {
+    "http-server": "^0.11.1"
   }
 }
