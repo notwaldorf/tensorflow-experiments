@@ -116,7 +116,7 @@ function initModel() {
   }));
 
   Model.compile({
-    optimizer: tf.train.adam(LEARNING_RATE),  // TODO:change this.
+    optimizer: tf.train.adam(LEARNING_RATE),
     loss: 'meanSquaredError'
   });
 }
