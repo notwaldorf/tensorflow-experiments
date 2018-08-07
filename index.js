@@ -1,24 +1,25 @@
+// Small hack so that this file can be used both in the web demo and in node
 let IS_RUNNING_IN_NODE = (typeof window === 'undefined');
+const tf = IS_RUNNING_IN_NODE ? require('@tensorflow/tfjs') : window.tf;
 
 // Got data from https://www.zillow.com/research/data/
 // 1 bedroom time series, by city.
 let Data = {};
 let Model = {};
+
 let LEARNING_RATE = 0.001;
 let EPOCHS = 100;
 let MAX_LOSS = 0.00000001;
 let UNITS = 60;
-const tf = IS_RUNNING_IN_NODE ? require('@tensorflow/tfjs') : window.tf;
-// const tf = IS_RUNNING_IN_NODE ? require('@tensorflow/tfjs-node') : window.tf;
 
+// Small hack so that this file can be used both in the web demo and in node.
 if (IS_RUNNING_IN_NODE) {
+  require('@tensorflow/tfjs-node');
   var fs = require('fs');
-  var obj;
-  fs.readFile('./data.json', 'utf8', async function (err, data) {
-    if (err) throw err;
-    obj = JSON.parse(data);
-    await dataReceived(obj);
 
+  fs.readFile('./data.json', 'utf8', async (err, data) => {
+    if (err) throw err;
+    await dataReceived(JSON.parse(data));
     train();
   });
 } else {
@@ -44,6 +45,7 @@ async function dataReceived(obj) {
   console.log(`First inference: ${Date.now() - start} ms`);
   replot(prediction);
 }
+
 function parseData(obj) {
   // The data is:
   // - 11 entries
@@ -63,13 +65,12 @@ function parseData(obj) {
     // Save this just in case we need it.
     cities.push(entry['RegionName']);
 
-    // Add it to the select dropdown.
+    // Add it to the select dropdown if in the web demo.
     if (!IS_RUNNING_IN_NODE) {
       const opt = document.createElement('option');
       opt.textContent = entry['RegionName'];
       select.add(opt);
     }
-
 
     const theseCols = Object.keys(entry);
     // If this entry doesn't have any new columns, move on.
@@ -160,6 +161,7 @@ async function getNormalizedPrediction(trainingData) {
 Plotting stuff
 */
 async function replot(prediction) {
+  // No plotting in node.
   if (IS_RUNNING_IN_NODE) {
     return;
   }
