@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>🏡💰</title>
+		<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.11.2"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="./houses.js"></script>
+	</head>
+
+	<body>
+    <select id="select" onchange="replot(event)"></select>
+    <button onclick="train()">Train</button>
+    <div id="graph"></div>
+	</body>
+</html>
