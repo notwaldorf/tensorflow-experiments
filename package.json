@@ -1,0 +1,26 @@
+{
+  "name": "tensorflow-experiments",
+  "version": "1.0.0",
+  "description": "Figuring out speed differences between tf js and python",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/notwaldorf/tensorflow-experiments.git"
+  },
+  "author": "Monica Dinculescu <noms@google.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/notwaldorf/tensorflow-experiments/issues"
+  },
+  "homepage": "https://github.com/notwaldorf/tensorflow-experiments#readme",
+  "dependencies": {
+    "@tensorflow/tfjs": "0.12.4",
+    "@tensorflow/tfjs-node": "^0.1.11"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}

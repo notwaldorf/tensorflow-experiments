@@ -1,18 +1,33 @@
+let IS_RUNNING_IN_NODE = (typeof window === 'undefined');
+
 // Got data from https://www.zillow.com/research/data/
 // 1 bedroom time series, by city.
-
 let Data = {};
 let Model = {};
 let LEARNING_RATE = 0.001;
 let EPOCHS = 100;
 let MAX_LOSS = 0.00000001;
 let UNITS = 60;
+const tf = IS_RUNNING_IN_NODE ? require('@tensorflow/tfjs') : window.tf;
+// const tf = IS_RUNNING_IN_NODE ? require('@tensorflow/tfjs-node') : window.tf;
 
-fetch('./data.json')
-.then(function(response) {
-  return response.json();
-})
-.then(dataReceived);
+if (IS_RUNNING_IN_NODE) {
+  var fs = require('fs');
+  var obj;
+  fs.readFile('./data.json', 'utf8', async function (err, data) {
+    if (err) throw err;
+    obj = JSON.parse(data);
+    await dataReceived(obj);
+
+    train();
+  });
+} else {
+  fetch('./data.json')
+  .then(function(response) {
+    return response.json();
+  })
+  .then(dataReceived);
+}
 
 async function dataReceived(obj) {
   let start = Date.now();
@@ -49,11 +64,14 @@ function parseData(obj) {
     cities.push(entry['RegionName']);
 
     // Add it to the select dropdown.
-    const opt = document.createElement('option');
-    opt.textContent = entry['RegionName'];
-    select.add(opt);
-    const theseCols = Object.keys(entry);
+    if (!IS_RUNNING_IN_NODE) {
+      const opt = document.createElement('option');
+      opt.textContent = entry['RegionName'];
+      select.add(opt);
+    }
 
+
+    const theseCols = Object.keys(entry);
     // If this entry doesn't have any new columns, move on.
     if (ignoredCols.length + dates.length !== theseCols.length) {
       // Go through all the columns, and save all the ones that are
@@ -104,6 +122,7 @@ function initModel() {
 }
 
 async function train() {
+  console.log('Starting training...');
   let start = Date.now();
 
   for(let e = 0; e < EPOCHS; e++) {
@@ -141,6 +160,9 @@ async function getNormalizedPrediction(trainingData) {
 Plotting stuff
 */
 async function replot(prediction) {
+  if (IS_RUNNING_IN_NODE) {
+    return;
+  }
   const index = select.selectedIndex;
   plot(Data.dates, Data.prices[index], prediction);
 }
