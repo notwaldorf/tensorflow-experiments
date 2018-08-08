@@ -1,6 +1,7 @@
 import tensorflow as tf
 import json
 import time
+import numpy as np
 
 current_time = lambda: int(round(time.time() * 1000))
 
@@ -24,8 +25,12 @@ def main():
         print("Initializing model: %d ms" % (current_time() - start))
 
         start = current_time()
-        prediction = get_normalized_prediction(model, data["trainingData"][0], data["minPrice"], data["maxPrice"])
-        print("First inference: %d ms" % (current_time() - start))
+        print("Initial predictions:")
+        for i in range(len(data["trainingData"])):
+            prediction = get_normalized_prediction(model, data["trainingData"][i], data["minPrice"], data["maxPrice"])
+            y = denormalize(data["trainingData"][i]["output"], data["minPrice"], data["maxPrice"])
+            print("%f | %f" % (prediction, y))
+        print("Inference: %d ms" % (current_time() - start))
 
         train(model, data)
 
@@ -82,11 +87,9 @@ def init_model(data):
 
     model = tf.keras.models.Sequential([
       tf.keras.layers.LSTM(units=UNITS),
-      tf.keras.layers.Dense(1, activation=tf.nn.sigmoid),
-
+      tf.keras.layers.Dense(1, activation=tf.nn.sigmoid)
     ])
-    model.compile(optimizer='adam', loss=tf.losses.mean_squared_error)
-    # print(model.summary())
+    model.compile(optimizer='adam', loss="mean_squared_error", learning_rate=LEARNING_RATE)
     return model
 
 def get_training_data(data):
@@ -101,38 +104,43 @@ def get_training_data(data):
 
         last = normalize(ys[num_ys], data["minPrice"], data["maxPrice"])
 
-        input = tf.constant(normalized, shape = [1, len(normalized), 1])
-        output = tf.constant(last,  shape = [1, 1])
-        trainingData.append({"input": input, "output": output})
+        #input = tf.constant(normalized, shape = [1, len(normalized), 1])
+        #output = tf.constant(last,  shape = [1, 1])
+        trainingData.append({"input":normalized, "output":last})
     return trainingData
 
 def train(model, data):
     start = current_time()
     training_data = data["trainingData"];
     for e in range(EPOCHS):
-        total_loss = 0
+        totalLoss = 0
         for i in range(len(training_data)):
-            print(training_data[i]["input"])
-            print(training_data[i]["output"])
+            _input = np.array(training_data[i]["input"])
+            _input = np.reshape(_input, (1, 266, 1))
+            output = np.array(training_data[i]["output"])
+            output = np.reshape(output, (1, 1))
 
             info = model.fit(
-              x=training_data[i]["input"],
-              y=training_data[i]["output"],
-              batch_size=266,
-              steps_per_epoch=1, epochs=1)
-        totalLoss += info.history.loss[0]
-        avgLoss = totalLoss / len(training_data[i]["input"])
-        print("[%d/%d] Average Loss %d" % (e, EPOCHS, avgLoss))
+              x=_input, y=output, epochs=1, verbose=0)
+            totalLoss += info.history["loss"][0]
+
+        avgLoss = totalLoss / 266.0
+        print("[%d/%d] Average Loss %.9f" % (e, EPOCHS, avgLoss))
 
     print("Training: %d ms" % (current_time() - start))
 
     start = current_time()
-    prediction = get_normalized_prediction(model, data["trainingData"][0], data["minPrice"], data["maxPrice"])
+    print("Final predictions:")
+    for i in range(len(data["trainingData"])):
+        prediction = get_normalized_prediction(model, data["trainingData"][i], data["minPrice"], data["maxPrice"])
+        y = denormalize(data["trainingData"][i]["output"], data["minPrice"], data["maxPrice"])
+        print("%f | %f" % (prediction, y))
     print("Inference: %d ms" % (current_time() - start))
+    # print(model.summary())
 
 def get_normalized_prediction(model, data, minPrice, maxPrice):
-  prediction = model.predict(data["input"], steps=1).flatten()
-
+  #prediction = model.predict(data["input"], steps=1).flatten()
+  prediction = model.predict(tf.constant(data["input"], shape=[1, len(data["input"]), 1]), steps=1).flatten()
   # prediction = prediction.get(0,0)
   return denormalize(prediction, minPrice, maxPrice)
 

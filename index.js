@@ -41,8 +41,14 @@ async function dataReceived(obj) {
   replot();
 
   start = Date.now();
+  console.log("Initial predictions:")
+  for (let i = 0; i < Data.trainingData.length; i++) {
+    const prediction = await getNormalizedPrediction(Data.trainingData[i]);
+    const y = denormalize(Data.trainingData[i].output.get(0,0), Data.minPrice, Data.maxPrice);
+    console.log(`${prediction} | ${y}`);
+  }
+  console.log(`Inference: ${Date.now() - start} ms`);
   const prediction = await getNormalizedPrediction(Data.trainingData[0]);
-  console.log(`First inference: ${Date.now() - start} ms`);
   replot(prediction);
 }
 
@@ -145,8 +151,14 @@ async function train() {
   console.log(`Training: ${Date.now() - start} ms`);
 
   start = Date.now();
-  const prediction = await getNormalizedPrediction(Data.trainingData[0]);
+  console.log("Final predictions:")
+  for (let i = 0; i < Data.trainingData.length; i++) {
+    const prediction = await getNormalizedPrediction(Data.trainingData[i]);
+    const y = denormalize(Data.trainingData[i].output.get(0,0), Data.minPrice, Data.maxPrice);
+    console.log(`${prediction} | ${y}`);
+  }
   console.log(`Inference: ${Date.now() - start} ms`);
+  const prediction = await getNormalizedPrediction(Data.trainingData[0]);
   replot(prediction);
 }
 
