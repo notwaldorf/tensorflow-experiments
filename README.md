@@ -1,20 +1,26 @@
 tensorflow-experiments
 ==========================
 
-I am trying to figure out how much slower tensorflow js is compared to python.
-This example trains an LSTM on some house prices data from Zillow, using an LSTM model (either from tensorflow.js or from
-  the Keras model in python), for 100 epochs. I tried to
-  keep the code as similar as possible, which means the python
-  code might be a little suspect looking (this is also helped by the fact I've basically never written python)
+I am trying to figure out how much slower `tensorflow.js` (or `node`) is compared to `python`.
+
+This example trains an LSTM on some house prices data from Zillow, using an LSTM -- I didn't build the model from
+scratch, and I used either the prebuilt one from `tensorflow.js` or from
+  the Keras model in `python`). Training is done for 100 epochs.
+
+  I tried to
+  keep the code between js/python as similar as possible, which means the python
+  code might look a little suspect (this is also helped by the fact I've basically never written python until this code)
 
 ## Results tl; dr
-The training data was historical house prices for the top 11 cities on Zillow (267 data points for each). I held back the last data point as the `output`, and used the other 266 for the LSTM `input`.
+The training data is historical house prices for the top 11 cities on Zillow (267 data points for each city). I held back the last data point as the `output`, and used the other 266 for the LSTM `input`. The LSTM has 60 hidden units, and is trained for 100 epochs (1 episode per epoch).
 
 |  | Initializing model (ms) | Total training (ms)  | Inference (ms)|
 | ------------- | -------------------:| ---------:| ----------:|
 | Python        | 40 | 250627 | 2924 |
 | Node          | 664 | 3905974 | 4453 |
 | Browser       | 1445 | 1382144 | 2924 |
+
+Training is 5.5 times faster in Python than in the browser, and 16 times faster than in node 🙀.
 
 ## Prediction values
 (Each row represents one of the 11 cities. The "actual value" is
@@ -34,13 +40,15 @@ the `output` point used in training; the remaining values are the predictions fo
 | 91700.00133 | 99538.33594 | 103163.5534 | 103240.7722 |
 | 895200 | 890565.3125 | 888041.1434 | 887452.5978 |
 
+(They're pretty comparable)
+
 ## Run in node
 ```
 npm install
 npm start
 ```
 
-Results:
+Sample results:
 ```
 Parsing data: 1 ms
 Initializing model: 664 ms
@@ -89,7 +97,7 @@ npm run local
 Navigate to `localhost:8080`, and press the "Train" button. Timings are logged
 to the console.
 
-Results:
+Sample results:
 ```
 Parsing data: 1 ms
 Initializing model: 1445 ms
@@ -143,7 +151,7 @@ npm run python
 # i'm just bad at python.
 ```
 
-Results:
+Sample results:
 ```
 Parsing data: 1 ms
 Initializing model: 40 ms
