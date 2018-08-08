@@ -5,14 +5,16 @@ I am trying to figure out how much slower `tensorflow.js` (or `node`) is compare
 
 This example trains an LSTM on some house prices data from Zillow, using an LSTM -- I didn't build the model from
 scratch, and I used either the prebuilt one from `tensorflow.js` or from
-  the Keras model in `python`). Training is done for 100 epochs.
+the Keras model in `python`). Training is done for 100 epochs.
 
-  I tried to
-  keep the code between js/python as similar as possible, which means the python
-  code might look a little suspect (this is also helped by the fact I've basically never written python until this code)
+I tried to
+keep the code between js/python as similar as possible, which means the python
+code might look a little suspect (this is also helped by the fact I've basically never written python until this code)
 
 ## Results tl; dr
 The training data is historical house prices for the top 11 cities on Zillow (267 data points for each city). I held back the last data point as the `output`, and used the other 266 for the LSTM `input`. The LSTM has 60 hidden units, and is trained for 100 epochs (1 episode per epoch).
+
+All the tests were ran on the same MacBook Pro.
 
 |  | Initializing model (ms) | Total training (ms)  | Inference (ms)|
 | ------------- | -------------------:| ---------:| ----------:|
@@ -20,7 +22,7 @@ The training data is historical house prices for the top 11 cities on Zillow (26
 | Node          | 664 | 3905974 | 4453 |
 | Browser       | 1445 | 1382144 | 2924 |
 
-Training is 5.5 times faster in Python than in the browser, and 16 times faster than in node 🙀.
+Training looks 5.5 times faster in Python than in the browser, and 16 times faster than in node 🙀.
 
 ## Prediction values
 (Each row represents one of the 11 cities. The "actual value" is
