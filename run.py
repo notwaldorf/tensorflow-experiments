@@ -82,8 +82,8 @@ def init_model(data):
 
     model = tf.keras.models.Sequential([
       tf.keras.layers.LSTM(units=UNITS),
-      tf.keras.layers.Flatten(),
-      tf.keras.layers.Dense(1, activation=tf.nn.sigmoid)
+      tf.keras.layers.Dense(1, activation=tf.nn.sigmoid),
+
     ])
     model.compile(optimizer='adam', loss=tf.losses.mean_squared_error)
     # print(model.summary())
@@ -115,8 +115,10 @@ def train(model, data):
             print(training_data[i]["input"])
             print(training_data[i]["output"])
 
-            # y = tf.keras.utils.to_categorical(training_data[i]["output"])
-            info = model.fit(training_data[i]["input"], training_data[i]["output"],
+            info = model.fit(
+              x=training_data[i]["input"],
+              y=training_data[i]["output"],
+              batch_size=266,
               steps_per_epoch=1, epochs=1)
         totalLoss += info.history.loss[0]
         avgLoss = totalLoss / len(training_data[i]["input"])
