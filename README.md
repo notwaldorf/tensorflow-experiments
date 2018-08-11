@@ -18,7 +18,7 @@ All the tests were ran on the same MacBook Pro.
 
 |  | Initializing model (ms) | Total training (ms)  | Inference (ms)|
 | ------------- | -------------------:| ---------:| ----------:|
-| Python        | 40 | 250627 | 2924 |
+| Python        | 40 | 250627 | 1751 |
 | Node          | 664 | 3905974 | 4453 |
 | Browser       | 1445 | 1382144 | 2924 |
 
@@ -47,7 +47,7 @@ the `output` point used in training; the remaining values are the predictions fo
 ## Run in node
 ```
 npm install
-npm start
+npm run node
 ```
 
 Sample results:
@@ -93,7 +93,7 @@ Prediction | Actual
 ## Run in the browser
 ```
 npm install
-npm run local
+npm run browser
 ```
 
 Navigate to `localhost:8080`, and press the "Train" button. Timings are logged
